@@ -10,6 +10,6 @@ router.get("/get_book/:id", BookController.getBookbyId);
 
 router.put("/update_book/:id", BookController.updateBookbyId);
 
-router.delete("/    delete_book/:id", BookController.deleteBookbyId);
+router.delete("/delete_book/:id", BookController.deleteBookbyId);
 
 module.exports = router;

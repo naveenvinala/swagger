@@ -36,4 +36,4 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1", booksRouter);
 
-app.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
+app.listen(PORT, () => console.log(`The server is running on port ${PORT}`,`swagger is runnimg at http://localhost:4000/api-docs`));

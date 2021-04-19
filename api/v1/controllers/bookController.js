@@ -8,15 +8,15 @@ exports.createBook = async (req, res) => {
       ...req.body,
     };
     await req.app.db.get("books").push(book).write();
-    res.send(book);
+    res.status(201).json(book);
   } catch (error) {
-    return res.status(500).send(error);
+    return res.status(500).send(error.message);
   }
 };
 
 exports.getBooks = async (req, res) => {
   const books = await req.app.db.get("books");
-  res.status(200).json(books)
+  res.status(200).json(books);
 };
 
 exports.getBookbyId = async (req, res) => {
@@ -25,25 +25,33 @@ exports.getBookbyId = async (req, res) => {
     .find({ id: req.params.id })
     .value();
   if (!book) {
-    res.sendStatus(404);
+    res.status(404).json({ message: "Not found" });
   }
   res.send(book);
 };
 exports.updateBookbyId = async (req, res) => {
-	try {
-		req.app.db
-			.get("books")
-			.find({ id: req.params.id })
-			.assign(req.body)
-			.write();
-
-		res.send(req.app.db.get("books").find({ id: req.params.id }));
-	} catch (error) {
-		return res.status(500).send(error);
-	}
+  try {
+    req.app.db
+      .get("books")
+      .find({ id: req.params.id })
+      .assign(req.body)
+      .write();
+    res.send(req.app.db.get("books").find({ id: req.params.id }));
+  } catch (error) {
+    return res.status(500).send(error);
+  }
 };
 
 exports.deleteBookbyId = async (req, res) => {
-	req.app.db.get("books").remove({ id: req.params.id }).write();
-	res.sendStatus(200);
-}
+  try {
+    const book = await req.app.db.get("books").remove({ id: req.params.id }).write();
+    if (!book.length) {
+      res.status(404).json({ "message": "Not found" });
+    } else { 
+      res.status(204).send({ "message": "Deleted succesfully" });
+    }
+  }
+  catch(error){
+    res.status(500).json({ "message": "database error" });
+  }
+};

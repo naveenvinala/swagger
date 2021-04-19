@@ -4,58 +4,129 @@ info:
   description: This is a sample server for a pet store.
   termsOfService: http://example.com/terms/
   contact:
-   name: API Support
-   url: http://www.example.com/support
-   email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+    email: support@example.com
   license:
-   name: Apache 2.0
-   url: https://www.apache.org/licenses/LICENSE-2.0.html
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.1
- 
+
 servers:
   - url: http://localhost:4000/api/v1
   - url: http://dev-api.example.com
- 
+
 paths:
+  /delete_book/{id}:
+    delete:
+      summary: "delete book by Id"
+      description: Deletes the book in store.
+      operationId: deleteBookById
+      parameters:
+        - name: id
+          in: path
+          description: Book ID to Delete
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The resource was deleted successfully.
+        404:
+          $ref: "#/components/responses/NotFound"
+
+
+  /update_book/{id}:
+    put:
+      summary: "Update book by Id"
+      description: Updates the book in store.
+      operationId: updateBookById
+      parameters:
+        - name: id
+          in: path
+          description: Book ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Id is auto genrated so add title & author
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+            examples:
+              book:
+                $ref: "#/components/examples/book"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#components/examples/books"
+        404:
+          $ref: "#/components/responses/NotFound"
+
+  /get_book/{id}:
+    get:
+      summary: "Get all books from the store by Id"
+      description: A detailed description of the operation.
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          description: Book ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/Book"
+        404:
+          $ref: "#/components/responses/NotFound"
+
   /get_books:
     get:
       security:
-       - bearerAuth: []
-      summary: 'Get all books from the store'
+        - bearerAuth: []
+      summary: "Get all books from the store"
       responses:
-        '200':
-          description: 'successful retrieved'
+        200:
+          description: "successful retrieved"
           content:
             application/json:
-             schema:
-              $ref: '#components/schemas/Books'
-        '404': 
-           $ref: '#/components/responses/404NotFound'
-        '401':
-          description: Access token is missing or invalid
+              schema:
+                $ref: "#components/schemas/Books"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
+
   /create_book:
     post:
       summary: Add a new book
       requestBody:
         description: Id is auto genrated so add title & author
         content:
-          'application/x-www-form-urlencoded': 
+          application/json:
             schema:
-              $ref: '#/components/schemas/Book'
-          'application/json': 
-            schema:
-              $ref: '#/components/schemas/Book'
+              $ref: "#/components/schemas/Book"
             examples:
-               $ref: '#/components/examples/bookExample'
+              book:
+                $ref: "#/components/examples/book"
       responses:
-        '201':
+        201:
           description: Created
           content:
             application/json:
-             schema:
-              $ref: '#components/schemas/Book'
-        '404': 
-           $ref: '#/components/responses/404NotFound'
+              schema:
+                $ref: "#components/examples/books"
+        500:
+          description: Internal Server Error
         default:
           description: Unexpected error
 
@@ -67,19 +138,15 @@ components:
         type: object
         properties:
           id:
-           type: integer
-           format: int64
+            type: string
           title:
-           type: string
+            type: string
           author:
-           type: string
-      example:
-        - id : K2c53lvJ
-          title: The New Turing Omnibu
-          author: Alexander 
-        - id : K2c53lvJ
-          title: The New Turing Omnibu
-          author: Alexander 
+            type: string
+        required:
+          - title
+          - author
+
     Book:
       type: object
       properties:
@@ -88,31 +155,51 @@ components:
         author:
           type: string
       required:
-         - title
-         - author
-      
+        - title
+        - author
+      # Schema for error response body
 
-  examples: 
-    bookExample: 
-      title: The nn Great
-      author: Alexander 
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+  examples:
+    books:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+    book:
+      value:
+        title: book_title
+        author: book_author
 
   responses:
-    404NotFound:  
-      description: The specified book was not found.
- 
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
-
-  ApiResponse:
-    type: 'object'
-    properties:
-      code:
-        type: 'integer'
-        format: 'int32'
-      type:
-        type: 'string'
-      message:
-        type: 'string'     
